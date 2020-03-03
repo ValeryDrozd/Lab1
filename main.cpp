@@ -7,6 +7,12 @@ struct country{
 };
 
 vector <country> v;
+void readCsvFile(char filepath[],char filename[])
+{
+    string s1 = filepath,s2 = filename;
+    string fin = s1+"\\"+s2;
+}
+
 
 int main()
 {
