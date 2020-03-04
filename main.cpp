@@ -1,23 +1,28 @@
 #include <bits/stdc++.h>
 #include <dirent.h>
 #include <sys/types.h>
-
 using namespace std;
+
 struct country{
     string name;
     int votes[20];
 };
 
 vector <country> v;
+
 void readCsvFile(char filepath[],char filename[])
 {
     string s1 = filepath,s2 = filename;
     string fin = s1+"\\"+s2;
-     ifstream file;
-     if(!file){
+    ifstream file;
+    file.close();
+   // file.open(fin.c_str());
+   /* if(!file){
         cout<<"Error during reading the file\n";
         exit();
     }
+    */
+    /*
     int n;
     string s,data;
     file>>n;
@@ -37,22 +42,41 @@ void readCsvFile(char filepath[],char filename[])
     v.push_back(to_push);
 }
     file.close();
-
 }
+
+
+void outCsvFile(char filepath[]){
+    ofstream file;
+    file.open(filepath);
+    if(!file){
+        cout<<"Error during writing data in the file\n";
+        exit(3);
+    }
+    for(int i=0;i<10;i++){
+        file<<v[i].name<<",";
+        for(int j=0;j<=19;j++){
+            file<<v[i].votes[j];
+            if(j<19)file<<",";
+        }
+        file<<endl;
+    }
+    file.close();
+}
+
+
 void getFiles(char folderpath[]){
     DIR *dir;
     struct dirent * dp;
     dir = opendir(folderpath);
     if(!dir){
         cout<<"Error during opening folder\n";
-        exit();
+        exit(1);
     }
     string s;
     while((dp = readdir(dir))!=NULL){
         s = dp->d_name;
-         if(s[0]!='.')readCsvFile(folderpath,dp->d_name);
+        if(s[0]!='.')readCsvFile(folderpath,dp->d_name);
     }
-
 }
 
 
@@ -64,9 +88,16 @@ bool cmp(country a,country b){
     }
     return sa>sb;
 }
+
+*/
+
 int main()
 {
-    char folderpath[256];
-    gets(folderpath);
-    getFiles(folderpath);
+ char folderpath[256];
+ //gets(folderpath);
+ /*
+ getFiles(folderpath);
+ sort(v.begin(),v.end(),cmp);
+ outCsvFile("rezult.csv");*/
 }
+
