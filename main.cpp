@@ -69,7 +69,14 @@ void outCsvFile(char filepath[]){
         cout<<"Error during writing data in the file\n";
         exit(3);
     }
-
+     for(int i=0;i<10;i++){
+        file<<v[i].name<<",";
+        for(int j=0;j<=19;j++){
+            file<<v[i].votes[j];
+            if(j<19)file<<",";
+        }
+        file<<endl;
+    }
     file.close();
 }
 
