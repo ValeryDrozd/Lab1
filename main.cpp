@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include <dirent.h>
+#include <sys/types.h>
 
 using namespace std;
 struct country{
@@ -11,6 +13,22 @@ void readCsvFile(char filepath[],char filename[])
 {
     string s1 = filepath,s2 = filename;
     string fin = s1+"\\"+s2;
+     ifstream file;
+    file.close();
+}
+void getFiles(char folderpath[]){
+    DIR *dir;
+    struct dirent * dp;
+    dir = opendir(folderpath);
+    if(!dir){
+        cout<<"Error during opening folder\n";
+        exit(1);
+    }
+    string s;
+    while((dp = readdir(dir))!=NULL){
+        s = dp->d_name;
+
+    }
 }
 
 bool cmp(country a,country b){
@@ -23,5 +41,7 @@ bool cmp(country a,country b){
 }
 int main()
 {
-
+    char folderpath[256];
+    gets(folderpath);
+    getFiles(folderpath);
 }
