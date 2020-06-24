@@ -1,108 +1,81 @@
-#include <bits/stdc++.h>
-#include <dirent.h>
-#include <sys/types.h>
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
 using namespace std;
-
-struct country{
-    string name;
-    int votes[20];
-    double average = 0;
-    int mark = 0;
+//Wav Header
+struct wav_header_t
+{
+    char chunkID[4]; //"RIFF" = 0x46464952
+    unsigned long chunkSize; //28 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes] + sum(sizeof(chunk.id) + sizeof(chunk.size) + chunk.size)
+    char format[4]; //"WAVE" = 0x45564157
+    char subchunk1ID[4]; //"fmt " = 0x20746D66
+    unsigned long subchunk1Size; //16 [+ sizeof(wExtraFormatBytes) + wExtraFormatBytes]
+    unsigned short audioFormat;
+    unsigned short numChannels;
+    unsigned long sampleRate;
+    unsigned long byteRate;
+    unsigned short blockAlign;
+    unsigned short bitsPerSample;
+    //[WORD wExtraFormatBytes;]
+    //[Extra format bytes]
 };
 
-vector <country> v;
-
-void readCsvFile(char filepath[],char filename[])
+//Chunks
+struct chunk_t
 {
-    cout<<"Reading file\n";
-    string s1 = filepath,s2 = filename;
-    string fin = s1+"\\"+s2;
-    ifstream file;
-    cout<<fin;
-    file.open(fin.c_str());
-    if(!file){
-        cout<<"Error during reading the file\n";
-        exit(2);
+    char ID[4]; //"data" = 0x61746164
+    unsigned long size;  //Chunk data bytes
+};
+
+void WavReader(const char* fileName, const char* fileToSave,int n)
+{
+    FILE* fin = fopen(fileName, "rb");
+    wav_header_t header,newHeader;
+    fread(&header, sizeof(header), 1, fin);
+    chunk_t chunk,newChunk;
+    while (true)
+    {
+        fread(&chunk, sizeof(chunk), 1, fin);
+        printf("%c%c%c%c\t" "%li\n", chunk.ID[0], chunk.ID[1], chunk.ID[2], chunk.ID[3], chunk.size);
+        if (*(unsigned int*)&chunk.ID == 0x61746164)
+            break;
+        fseek(fin, chunk.size, SEEK_CUR);
     }
-    int n;
-    string s,data;
-    country to_push;
-    file>>n;
-    file.ignore(256,'\n');
-    for(int i=1;i<=n;i++){
-        getline(file,s);
-        stringstream line(s);
-        vector <string> words;
-        words.clear();
-        while(getline(line,data,',')){
-           words.push_back(data);
-        }
-        to_push.name = words[0];
-        for(int i=1;i<=20;i++){
-            to_push.votes[i-1] = stoi(words[i]);
-            to_push.average+=to_push.votes[i-1];
-        }
-        to_push.average = 0.05*to_push.average;
-        v.push_back(to_push);
+    int sample_size = header.bitsPerSample / 8;
+    int samples_count = chunk.size * 8 / header.bitsPerSample;
+    printf("Samples count = %i\n", samples_count);
+
+    short int* value = new short int[samples_count];
+    memset(value, 0, sizeof(short int) * samples_count);
+    for (int i = 0; i < samples_count; i++)
+    {
+        fread(&value[i], sample_size, 1, fin);
     }
+    cout << sizeof(value);
+    newHeader = header;
+    newChunk = chunk;
+    short int* newList = new short int[samples_count * n];
+    for (int i = 0; i < samples_count; i += 1) {
+        for (int j = 0; j < n; j += 1)
+            newList[i + j] = value[i];
+    }
+    newChunk.size = chunk.size * n;
+    FILE* fout = fopen(fileToSave, "wb");
+    fwrite(&header, sizeof(header), 1, fout);
+    fwrite(&chunk, sizeof(chunk), 1, fout);
+    for (int i = 0; i < samples_count*n; i++)
+    {
+        fwrite(&newList[i], sample_size, 1, fout);
+      //  fprintf(fout, "%d\n", value[i]);
+    }
+    fclose(fin);
+    fclose(fout);
 }
 
-bool cmp(country a,country b){
-    int sa = 0,sb = 0;
-    for(int i=0;i<20;i++){
-        sa+=a.votes[i];
-        sb+=b.votes[i];
-    }
-    return sa>sb;
-}
-
-void outCsvFile(char filepath[]){
-    ofstream file;
-    file.open(filepath);
-    if(!file){
-        cout<<"Error during writing data in the file\n";
-        exit(3);
-    }
-    for(int i=0;i<10;i++){
-        file<<v[i].name<<",";
-        for(int j=0;j<=19;j++)
-            file<<v[i].votes[j]<<",";
-        file<<v[i].average<<","<<v[i].mark<<endl;
-    }
-    file.close();
-}
-
-void getFiles(char folderpath[]){
-    cout<<"Reading folder\n";
-    DIR *dir;
-    struct dirent * dp;
-    dir = opendir(folderpath);
-    if(!dir){
-        cout<<"Error during opening folder\n";
-        exit(1);
-    }
-    string s;
-
-    while((dp = readdir(dir))!=NULL){
-        s = dp->d_name;
-        cout<<s<<endl;
-        if(s[s.size()-1]!='.')readCsvFile(folderpath,dp->d_name);
-    }
-    closedir(dir);
-}
-void make_marks(){
-    sort(v.begin(),v.end(),cmp);
-    v[0].mark = 12;
-    v[1].mark = 10;
-    for(int i=2;i<10;i++)
-        v[i].mark = 10-i;
-}
 int main()
 {
-    char folderpath[256];
-    gets(folderpath);
-    cout<<"Read!\n";
-    getFiles(folderpath);
-    make_marks();
-    outCsvFile("rezult.csv");
+    WavReader("input.wav", "out.wav",n);
+    return 0;
 }
